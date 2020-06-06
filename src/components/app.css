@@ -1,0 +1,18 @@
+html,
+body,
+#root {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+.App {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  font-family: sans-serif;
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  user-select: none;
+}
