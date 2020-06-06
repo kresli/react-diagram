@@ -15,14 +15,19 @@ export const data = PlaygroundStore.create({
         {
           id: v4(),
           direction: PortDirection.IN,
-          label: "A"
+          label: "Min",
+        },
+        {
+          id: v4(),
+          direction: PortDirection.IN,
+          label: "Max",
         },
         {
           id: uuid[0],
           direction: PortDirection.OUT,
-          label: "B"
-        }
-      ]
+          label: "B",
+        },
+      ],
     },
     {
       id: v4(),
@@ -34,17 +39,17 @@ export const data = PlaygroundStore.create({
         {
           id: uuid[1],
           direction: PortDirection.IN,
-          label: "A"
-        }
-      ]
-    }
+          label: "A",
+        },
+      ],
+    },
   ],
   connections: [
     {
       id: v4(),
       label: "my-label",
       start: uuid[0],
-      end: uuid[1]
-    }
-  ]
+      end: uuid[1],
+    },
+  ],
 });

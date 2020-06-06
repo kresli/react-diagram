@@ -1,0 +1,34 @@
+.Ports {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  .ports-in {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-right: 0.5em;
+  }
+  .ports-out {
+    padding-left: 0.5em;
+  }
+  .ports-separator {
+    width: 1px;
+    background: black;
+  }
+}
+.Port {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  .label {
+    flex: 1;
+    justify-content: start;
+    display: flex;
+  }
+  .gate {
+    width: 1em;
+    height: 1em;
+    background: red;
+    margin: 0.5em;
+  }
+}

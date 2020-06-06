@@ -1,8 +1,14 @@
-import React, { useRef, useState, FunctionComponent } from "react";
-import { NodePosition, IPlaygroundStore, INodeStore } from "../stores";
+import React, { useRef, useState, FunctionComponent, useEffect } from "react";
+import {
+  NodePosition,
+  IPlaygroundStore,
+  INodeStore,
+  IConnectionStore,
+} from "../stores";
 import { NodeBlock } from ".";
 import { observer } from "mobx-react";
 import { Grid } from ".";
+import { getType } from "mobx-state-tree";
 interface PlaygroundProps {
   playgroundStore: IPlaygroundStore;
 }
@@ -14,16 +20,16 @@ function getMousePosParent(
   const { x, y } = parent.getBoundingClientRect();
   return {
     x: evt.pageX - x,
-    y: evt.pageY - y
+    y: evt.pageY - y,
   };
 }
 
 export const Playground: FunctionComponent<PlaygroundProps> = observer(
   ({ playgroundStore }) => {
-    const { nodes } = playgroundStore;
+    const { nodes, connections } = playgroundStore;
     const canvasSize = {
       width: 800,
-      height: 800
+      height: 800,
     };
     const canvasRef = useRef<HTMLDivElement>(null);
     const playgroundRef = useRef<HTMLDivElement>(null);
@@ -53,7 +59,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
         const dragRelativeOffset = offset;
         const dragOffset = {
           x: dragRelativeOffset!.x / canasZoom,
-          y: dragRelativeOffset!.y / canasZoom
+          y: dragRelativeOffset!.y / canasZoom,
         };
 
         setDragNode({ dragNode: node!, dragOffset: dragOffset! });
@@ -81,7 +87,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       const { x, y } = panOffset;
       setPan({
         isPan: true,
-        panOffset: { x: x + movementX, y: y + movementY }
+        panOffset: { x: x + movementX, y: y + movementY },
       });
     };
 
@@ -115,8 +121,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
           y:
             panOffset.y +
             ((canvasSize.height * scaleFactor) / 100) *
-              (y / canasZoom / (canvasSize.height / 100))
-        }
+              (y / canasZoom / (canvasSize.height / 100)),
+        },
       });
     };
 
@@ -126,7 +132,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       width: "100%",
       height: "100%",
       position: "relative",
-      overflow: "hidden"
+      overflow: "hidden",
     } as const;
     const canvasStyle = {
       background: "transparent",
@@ -136,7 +142,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       position: "absolute",
       left: panOffset.x,
       top: panOffset.y,
-      transform: `scale(${canasZoom})`
+      transform: `scale(${canasZoom})`,
     } as const;
     return (
       <div
@@ -148,15 +154,59 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       >
         <Grid size={15} />
         <div style={canvasStyle} ref={canvasRef}>
-          {nodes.map(node => (
+          {nodes.map((node) => (
             <NodeBlock
               key={node.id}
               node={node}
-              onDragStart={evt => setDrag(true, node, evt)}
+              onDragStart={(evt) => setDrag(true, node, evt)}
             />
+          ))}
+          {connections.map((connection) => (
+            <Connection key={connection.id} connection={connection} />
           ))}
         </div>
       </div>
     );
   }
 );
+
+const Connection: FunctionComponent<{
+  connection: IConnectionStore;
+}> = observer(({ connection }) => {
+  const { startGateCanvasPosition, endGateCanvasPosition } = connection;
+  // console.log(document.getElementById(connection.start.id));
+  return <Path start={startGateCanvasPosition!} end={endGateCanvasPosition!} />;
+});
+
+const Path: FunctionComponent<{
+  start: { x: number; y: number };
+  end: { x: number; y: number };
+}> = observer(({ start, end }) => {
+  // useEffect(() => {
+  //   const startEl = document.getElementById(start);
+  //   const endEl = document.getElementById(end);
+  //   const startPosition = startEl?.getBoundingClientRect();
+  //   console.log(startPosition);
+  //   setPositions({
+  //     startX: startPosition?.x || 0,
+  //     startY: startPosition?.y || 0,
+  //   });
+  // }, []);
+  console.log(start);
+  return (
+    <svg
+      height={100}
+      width={100}
+      x={0}
+      style={{ position: "absolute", left: start.x, top: start.y }}
+    >
+      <line
+        x1="0"
+        y1="0"
+        x2="200"
+        y2="200"
+        style={{ stroke: "rgb(255,0,0)", strokeWidth: 2 }}
+      />
+    </svg>
+  );
+});
