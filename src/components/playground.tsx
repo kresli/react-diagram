@@ -26,10 +26,10 @@ function getMousePosParent(
 
 export const Playground: FunctionComponent<PlaygroundProps> = observer(
   ({ playgroundStore }) => {
-    const { nodes, connections } = playgroundStore;
+    const { nodes } = playgroundStore;
     const canvasSize = {
-      width: 800,
-      height: 800,
+      width: 1,
+      height: 1,
     };
     const canvasRef = useRef<HTMLDivElement>(null);
     const playgroundRef = useRef<HTMLDivElement>(null);
@@ -44,8 +44,11 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       panOffset: NodePosition;
     }>({ isPan: false, panOffset: { x: 0, y: 0 } });
 
-    const [canasZoom, setCanasZoom] = useState(1);
+    const [canvasScale, setCanvasScale] = useState(1);
 
+    useEffect(() => {
+      playgroundStore.setCanvasRef(canvasRef.current);
+    }, [canvasRef]);
     interface SetDrag {
       (isDragging: true, node: INodeStore, offset: NodePosition): void;
       (isDragging: false): void;
@@ -58,8 +61,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       if (isDragging) {
         const dragRelativeOffset = offset;
         const dragOffset = {
-          x: dragRelativeOffset!.x / canasZoom,
-          y: dragRelativeOffset!.y / canasZoom,
+          x: dragRelativeOffset!.x / canvasScale,
+          y: dragRelativeOffset!.y / canvasScale,
         };
 
         setDragNode({ dragNode: node!, dragOffset: dragOffset! });
@@ -72,8 +75,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       if (!dragNode || !canvasRef.current || !dragOffset) return;
       if (dragNode && evt.buttons === 0) setDrag(false);
       const dragRelativeOffset = getMousePosParent(evt!, canvasRef.current);
-      const x = dragRelativeOffset.x / canasZoom;
-      const y = dragRelativeOffset.y / canasZoom;
+      const x = dragRelativeOffset.x / canvasScale;
+      const y = dragRelativeOffset.y / canvasScale;
       dragNode.updatePosition(x - dragOffset.x, y - dragOffset.y);
     };
 
@@ -97,31 +100,30 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
     };
 
     const onMouseDown = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      const elem = document.elementsFromPoint(evt.clientX, evt.clientY);
-      if (elem[0] !== canvasRef.current) return;
       setPan({ isPan: true, panOffset });
     };
 
     const onWheel = (evt: React.WheelEvent<HTMLDivElement>) => {
       const { deltaY } = evt;
-      if (deltaY > 0 && canasZoom < 0.3) return;
+      if (deltaY > 0 && canvasScale < 0.3) return;
       const scaleFactor = deltaY / 1000;
       const { x, y } = getMousePosParent(evt, canvasRef.current!);
 
-      const zoom = canasZoom - scaleFactor;
+      const scale = canvasScale - scaleFactor;
+      playgroundStore.setCanvasScale(scale);
 
-      setCanasZoom(zoom);
+      setCanvasScale(scale);
       setPan({
         isPan: false,
         panOffset: {
           x:
             panOffset.x +
             ((canvasSize.width * scaleFactor) / 100) *
-              (x / canasZoom / (canvasSize.width / 100)),
+              (x / canvasScale / (canvasSize.width / 100)),
           y:
             panOffset.y +
             ((canvasSize.height * scaleFactor) / 100) *
-              (y / canasZoom / (canvasSize.height / 100)),
+              (y / canvasScale / (canvasSize.height / 100)),
         },
       });
     };
@@ -135,25 +137,27 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       overflow: "hidden",
     } as const;
     const canvasStyle = {
-      background: "transparent",
+      // userSelect: "none",
+      background: "rgba(255, 0,0, 0.1)",
       width: canvasSize.width,
       height: canvasSize.height,
       transformOrigin: "0 0",
       position: "absolute",
       left: panOffset.x,
       top: panOffset.y,
-      transform: `scale(${canasZoom})`,
+      transform: `scale(${canvasScale})`,
     } as const;
     return (
       <div
         style={style}
         onMouseMove={onMouseMove}
-        onMouseDown={onMouseDown}
         onWheel={onWheel}
         ref={playgroundRef}
       >
         <Grid size={15} />
-        <div style={canvasStyle} ref={canvasRef}>
+        <CanvasDragger onMouseDown={onMouseDown} />
+        <div className="Canvas" style={canvasStyle} ref={canvasRef}>
+          <Connectors playground={playgroundStore} />
           {nodes.map((node) => (
             <NodeBlock
               key={node.id}
@@ -161,14 +165,48 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
               onDragStart={(evt) => setDrag(true, node, evt)}
             />
           ))}
-          {connections.map((connection) => (
+          {/* {connections.map((connection) => (
             <Connection key={connection.id} connection={connection} />
-          ))}
+          ))} */}
         </div>
       </div>
     );
   }
 );
+
+const CanvasDragger: FunctionComponent<{
+  onMouseDown(evt: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+}> = ({ onMouseDown }) => {
+  return (
+    <div
+      onMouseDown={onMouseDown}
+      className="CanvasDragger"
+      style={{
+        position: "absolute",
+        width: "100%",
+        height: "100%",
+        background: "rgba(0,255,0, 0.1)",
+      }}
+    ></div>
+  );
+};
+
+const Connectors: FunctionComponent<{
+  playground: IPlaygroundStore;
+}> = observer(({ playground }) => {
+  return (
+    <svg
+      style={{
+        overflow: "visible",
+        position: "absolute",
+      }}
+    >
+      {playground.connections.map((connection) => (
+        <Connection key={connection.id} connection={connection} />
+      ))}
+    </svg>
+  );
+});
 
 const Connection: FunctionComponent<{
   connection: IConnectionStore;
@@ -182,31 +220,11 @@ const Path: FunctionComponent<{
   start: { x: number; y: number };
   end: { x: number; y: number };
 }> = observer(({ start, end }) => {
-  // useEffect(() => {
-  //   const startEl = document.getElementById(start);
-  //   const endEl = document.getElementById(end);
-  //   const startPosition = startEl?.getBoundingClientRect();
-  //   console.log(startPosition);
-  //   setPositions({
-  //     startX: startPosition?.x || 0,
-  //     startY: startPosition?.y || 0,
-  //   });
-  // }, []);
-  console.log(start);
-  return (
-    <svg
-      height={100}
-      width={100}
-      x={0}
-      style={{ position: "absolute", left: start.x, top: start.y }}
-    >
-      <line
-        x1="0"
-        y1="0"
-        x2="200"
-        y2="200"
-        style={{ stroke: "rgb(255,0,0)", strokeWidth: 2 }}
-      />
-    </svg>
-  );
+  const points = [
+    [start.x, start.y],
+    [start.x + 30, start.y],
+    [end.x - 30, end.y],
+    [end.x, end.y],
+  ].join(",");
+  return <polyline points={points} stroke="red" strokeWidth="3" fill="none" />;
 });

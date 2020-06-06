@@ -20,6 +20,12 @@ const PortStore = types
       PortDirection.OUT
     ),
   })
+  .volatile((self) => ({
+    gateCanvasPosition: {
+      x: 0,
+      y: 0,
+    },
+  }))
   .views((self) => ({
     get isIn() {
       return self.direction === PortDirection.IN;
@@ -30,37 +36,24 @@ const PortStore = types
     get gateId(): string {
       return `${self.id}-gate`;
     },
-    get gateCanvasPosition(): { x: number; y: number } {
-      const elem = document.getElementById(this.gateId);
-      console.log(this.gateId);
-      //@todo
-      const { x, y } = elem?.getBoundingClientRect() || { x: 0, y: 0 };
-      return { x, y };
+    get nodePosition(): { x: number; y: number } {
+      return getParentOfType(self, NodeStore).position;
     },
-    get parentNode(): INodeStore {
-      return getParentOfType(self, NodeStore);
+    get playgroundPosition(): { x: number; y: number } {
+      return getParentOfType(self, PlaygroundStore).worldPosition;
     },
-    get parentNodeId(): string {
-      return this.parentNode.id;
+    get gateCanvasPosition() {
+      if (!this.nodePosition.x && !this.nodePosition.y) return;
+      const { x, y } = this.playgroundPosition;
+      const { left, top } = document
+        .getElementById(this.gateId)
+        ?.getBoundingClientRect() || {
+        left: 0,
+        top: 0,
+      };
+      return { x: left - x + 5, y: top - y + 5 };
     },
-  }))
-  .actions((self) => {
-    const observer = new MutationObserver((mutationsList, observer) => {
-      console.log(mutationsList);
-    });
-    const afterCreate = () => {
-      window.addEventListener("DOMContentLoaded", (event) => {
-        console.log(document.getElementById(self.parentNodeId));
-        observer.observe(document.getElementById(self.parentNodeId)!, {
-          attributes: true,
-          childList: true,
-          subtree: true,
-        });
-      });
-    };
-    const beforeDestroy = () => {};
-    return { afterCreate, beforeDestroy };
-  });
+  }));
 export interface IPortStore extends Instance<typeof PortStore> {}
 
 const ConnectionTargetType = types.union(
@@ -114,6 +107,9 @@ const NodeStore = types
     get portsOut() {
       return self.ports.filter(({ isOut }) => isOut);
     },
+    get position() {
+      return { x: self.posX, y: self.posY };
+    },
   }))
   .actions((self) => ({
     updatePosition(x: number, y: number) {
@@ -123,8 +119,24 @@ const NodeStore = types
   }));
 export interface INodeStore extends Instance<typeof NodeStore> {}
 
-export const PlaygroundStore = types.model({
-  nodes: types.array(NodeStore),
-  connections: types.array(ConnectionStore),
-});
+export const PlaygroundStore = types
+  .model({
+    nodes: types.array(NodeStore),
+    connections: types.array(ConnectionStore),
+  })
+  .volatile((self) => ({
+    canvas: null as null | HTMLDivElement,
+    canvasScale: 1,
+    worldPosition: { x: 0, y: 0 },
+  }))
+  .actions((self) => ({
+    setCanvasRef(canvas: HTMLDivElement | null = null) {
+      self.canvas = canvas;
+      const { x, y } = canvas?.getBoundingClientRect() || { x: 0, y: 0 };
+      self.worldPosition = { x, y };
+    },
+    setCanvasScale(scale: number) {
+      self.canvasScale = scale;
+    },
+  }));
 export interface IPlaygroundStore extends Instance<typeof PlaygroundStore> {}

@@ -11,7 +11,6 @@ interface NodeProps {
 export const NodeBlock: React.FunctionComponent<NodeProps> = observer(
   ({ node, onDragStart }) => {
     const style = {
-      background: "white",
       position: "absolute",
       top: `${node.posY}px`,
       left: `${node.posX}px`,
