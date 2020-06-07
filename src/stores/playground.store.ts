@@ -36,22 +36,41 @@ const PortStore = types
     get gateId(): string {
       return `${self.id}-gate`;
     },
+    get node(): INodeStore {
+      return getParentOfType(self, NodeStore);
+    },
     get nodePosition(): { x: number; y: number } {
-      return getParentOfType(self, NodeStore).position;
+      const { position, label } = this.node;
+      return position;
     },
-    get playgroundPosition(): { x: number; y: number } {
-      return getParentOfType(self, PlaygroundStore).worldPosition;
+    get playground(): IPlaygroundStore {
+      return getParentOfType(self, PlaygroundStore);
     },
-    get gateCanvasPosition() {
-      if (!this.nodePosition.x && !this.nodePosition.y) return;
-      const { x, y } = this.playgroundPosition;
+    get scale(): number {
+      return getParentOfType(self, PlaygroundStore).canvasScale;
+    },
+    get gateCanvasPosition(): { x: number; y: number } | undefined {
+      if (!this.nodePosition.x && !this.nodePosition.y && !this.scale) return;
+      const { x, y } = this.playground.canvas?.getBoundingClientRect() || {
+        x: 0,
+        y: 0,
+      };
       const { left, top } = document
         .getElementById(this.gateId)
         ?.getBoundingClientRect() || {
         left: 0,
         top: 0,
       };
-      return { x: left - x + 5, y: top - y + 5 };
+      const position = {
+        x: (left - x) / this.scale + 5,
+        y: (top - y) / this.scale + 5,
+      };
+      if (this.node.label === "Random Number") {
+        console.log({ nodePosition: this.nodePosition });
+        console.log(this.scale);
+        console.log({ x, y, left, top });
+      }
+      return position;
     },
   }));
 export interface IPortStore extends Instance<typeof PortStore> {}

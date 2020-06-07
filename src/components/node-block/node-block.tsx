@@ -34,6 +34,7 @@ const DragHandler: React.FunctionComponent<{
     padding: "1em",
     background: "green",
     userSelect: "none",
+    whiteSpace: "nowrap",
   } as const;
   const onMouseDown = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
     if (!ref.current) return;

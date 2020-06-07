@@ -12,16 +12,16 @@ export const data = PlaygroundStore.create({
       posX: 200,
       posY: 100,
       ports: [
-        {
-          id: v4(),
-          direction: PortDirection.IN,
-          label: "Min",
-        },
-        {
-          id: v4(),
-          direction: PortDirection.IN,
-          label: "Max",
-        },
+        // {
+        //   id: v4(),
+        //   direction: PortDirection.IN,
+        //   label: "Min",
+        // },
+        // {
+        //   id: v4(),
+        //   direction: PortDirection.IN,
+        //   label: "Max",
+        // },
         {
           id: uuid[0],
           direction: PortDirection.OUT,

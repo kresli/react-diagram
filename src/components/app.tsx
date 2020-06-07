@@ -8,7 +8,7 @@ export const App: React.FunctionComponent<{
 }> = ({ data }) => (
   <div className="App">
     <div style={{ padding: "3em", display: "flex", flex: 1, height: "100%" }}>
-      <Playground playgroundStore={data} />
+      <Playground playground={data} />
     </div>
   </div>
 );

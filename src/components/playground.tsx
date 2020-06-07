@@ -10,7 +10,7 @@ import { observer } from "mobx-react";
 import { Grid } from ".";
 import { getType } from "mobx-state-tree";
 interface PlaygroundProps {
-  playgroundStore: IPlaygroundStore;
+  playground: IPlaygroundStore;
 }
 
 function getMousePosParent(
@@ -25,8 +25,8 @@ function getMousePosParent(
 }
 
 export const Playground: FunctionComponent<PlaygroundProps> = observer(
-  ({ playgroundStore }) => {
-    const { nodes } = playgroundStore;
+  ({ playground }) => {
+    const { nodes } = playground;
     const canvasSize = {
       width: 1,
       height: 1,
@@ -44,10 +44,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       panOffset: NodePosition;
     }>({ isPan: false, panOffset: { x: 0, y: 0 } });
 
-    const [canvasScale, setCanvasScale] = useState(1);
-
     useEffect(() => {
-      playgroundStore.setCanvasRef(canvasRef.current);
+      playground.setCanvasRef(canvasRef.current);
     }, [canvasRef]);
     interface SetDrag {
       (isDragging: true, node: INodeStore, offset: NodePosition): void;
@@ -61,8 +59,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       if (isDragging) {
         const dragRelativeOffset = offset;
         const dragOffset = {
-          x: dragRelativeOffset!.x / canvasScale,
-          y: dragRelativeOffset!.y / canvasScale,
+          x: dragRelativeOffset!.x / playground.canvasScale,
+          y: dragRelativeOffset!.y / playground.canvasScale,
         };
 
         setDragNode({ dragNode: node!, dragOffset: dragOffset! });
@@ -75,8 +73,8 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       if (!dragNode || !canvasRef.current || !dragOffset) return;
       if (dragNode && evt.buttons === 0) setDrag(false);
       const dragRelativeOffset = getMousePosParent(evt!, canvasRef.current);
-      const x = dragRelativeOffset.x / canvasScale;
-      const y = dragRelativeOffset.y / canvasScale;
+      const x = dragRelativeOffset.x / playground.canvasScale;
+      const y = dragRelativeOffset.y / playground.canvasScale;
       dragNode.updatePosition(x - dragOffset.x, y - dragOffset.y);
     };
 
@@ -105,25 +103,25 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
 
     const onWheel = (evt: React.WheelEvent<HTMLDivElement>) => {
       const { deltaY } = evt;
-      if (deltaY > 0 && canvasScale < 0.3) return;
+      if (deltaY > 0 && playground.canvasScale < 0.3) return;
       const scaleFactor = deltaY / 1000;
       const { x, y } = getMousePosParent(evt, canvasRef.current!);
 
-      const scale = canvasScale - scaleFactor;
-      playgroundStore.setCanvasScale(scale);
+      const scale = playground.canvasScale - scaleFactor;
+      playground.setCanvasScale(scale);
 
-      setCanvasScale(scale);
+      playground.setCanvasScale(scale);
       setPan({
         isPan: false,
         panOffset: {
           x:
             panOffset.x +
             ((canvasSize.width * scaleFactor) / 100) *
-              (x / canvasScale / (canvasSize.width / 100)),
+              (x / playground.canvasScale / (canvasSize.width / 100)),
           y:
             panOffset.y +
             ((canvasSize.height * scaleFactor) / 100) *
-              (y / canvasScale / (canvasSize.height / 100)),
+              (y / playground.canvasScale / (canvasSize.height / 100)),
         },
       });
     };
@@ -137,7 +135,6 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       overflow: "hidden",
     } as const;
     const canvasStyle = {
-      // userSelect: "none",
       background: "rgba(255, 0,0, 0.1)",
       width: canvasSize.width,
       height: canvasSize.height,
@@ -145,7 +142,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       position: "absolute",
       left: panOffset.x,
       top: panOffset.y,
-      transform: `scale(${canvasScale})`,
+      transform: `scale(${playground.canvasScale})`,
     } as const;
     return (
       <div
@@ -157,7 +154,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
         <Grid size={15} />
         <CanvasDragger onMouseDown={onMouseDown} />
         <div className="Canvas" style={canvasStyle} ref={canvasRef}>
-          <Connectors playground={playgroundStore} />
+          <Connectors playground={playground} />
           {nodes.map((node) => (
             <NodeBlock
               key={node.id}
@@ -199,6 +196,8 @@ const Connectors: FunctionComponent<{
       style={{
         overflow: "visible",
         position: "absolute",
+        top: 0,
+        left: 0,
       }}
     >
       {playground.connections.map((connection) => (
