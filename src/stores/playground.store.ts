@@ -40,8 +40,7 @@ const PortStore = types
       return getParentOfType(self, NodeStore);
     },
     get nodePosition(): { x: number; y: number } {
-      const { position, label } = this.node;
-      return position;
+      return this.node.position;
     },
     get playground(): IPlaygroundStore {
       return getParentOfType(self, PlaygroundStore);
@@ -50,26 +49,26 @@ const PortStore = types
       return getParentOfType(self, PlaygroundStore).canvasScale;
     },
     get gateCanvasPosition(): { x: number; y: number } | undefined {
-      if (!this.nodePosition.x && !this.nodePosition.y && !this.scale) return;
-      const { x, y } = this.playground.canvas?.getBoundingClientRect() || {
-        x: 0,
-        y: 0,
+      // following check its just to make sure this getter will watch for node move
+      if (!this.nodePosition.x && !this.nodePosition.y) return;
+      console.log("run");
+      const {
+        left: canvasLeft,
+        top: canvasTop,
+      } = this.playground.canvas?.getBoundingClientRect() || {
+        left: 0,
+        top: 0,
       };
-      const { left, top } = document
+      const { left: gateLeft, top: gateTop } = document
         .getElementById(this.gateId)
         ?.getBoundingClientRect() || {
         left: 0,
         top: 0,
       };
       const position = {
-        x: (left - x) / this.scale + 5,
-        y: (top - y) / this.scale + 5,
+        x: (gateLeft - canvasLeft) / this.scale + 5,
+        y: (gateTop - canvasTop) / this.scale + 5,
       };
-      if (this.node.label === "Random Number") {
-        console.log({ nodePosition: this.nodePosition });
-        console.log(this.scale);
-        console.log({ x, y, left, top });
-      }
       return position;
     },
   }));
