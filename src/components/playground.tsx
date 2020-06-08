@@ -8,9 +8,10 @@ import {
 import { NodeBlock } from ".";
 import { observer } from "mobx-react";
 import { Grid } from ".";
-import { getType } from "mobx-state-tree";
+import { Eventor } from "../utils";
 interface PlaygroundProps {
   playground: IPlaygroundStore;
+  eventor: Eventor;
 }
 
 function getMousePosParent(
@@ -155,25 +156,32 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
         <CanvasDragger onMouseDown={onMouseDown} />
         <div className="Canvas" style={canvasStyle} ref={canvasRef}>
           <Connectors playground={playground} />
-          {nodes.map((node) => (
-            <NodeBlock
-              key={node.id}
-              node={node}
-              onDragStart={(evt) => setDrag(true, node, evt)}
-            />
-          ))}
-          {/* {connections.map((connection) => (
-            <Connection key={connection.id} connection={connection} />
-          ))} */}
+          <Nodes playground={playground} setDrag={setDrag} />
         </div>
       </div>
     );
   }
 );
 
+const Nodes: FunctionComponent<{
+  playground: IPlaygroundStore;
+  setDrag(isDragging: boolean, node?: INodeStore, offset?: NodePosition): void;
+}> = observer(({ playground, setDrag }) => (
+  <>
+    {playground.nodes.map((node) => (
+      <NodeBlock
+        key={node.id}
+        node={node}
+        onDragStart={(evt) => setDrag(true, node, evt)}
+        onConnectionDelete={playground.deleteConnection}
+      />
+    ))}
+  </>
+));
+
 const CanvasDragger: FunctionComponent<{
   onMouseDown(evt: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-}> = ({ onMouseDown }) => {
+}> = observer(({ onMouseDown }) => {
   return (
     <div
       onMouseDown={onMouseDown}
@@ -186,7 +194,7 @@ const CanvasDragger: FunctionComponent<{
       }}
     ></div>
   );
-};
+});
 
 const Connectors: FunctionComponent<{
   playground: IPlaygroundStore;

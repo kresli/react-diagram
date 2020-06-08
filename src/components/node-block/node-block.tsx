@@ -1,25 +1,37 @@
 import { observer } from "mobx-react";
 import { useRef } from "react";
 import React from "react";
-import { NodePosition, INodeStore } from "../../stores";
+import {
+  NodePosition,
+  INodeStore,
+  IPortStore,
+  IConnectionStore,
+} from "../../stores";
 import { Ports } from "./ports";
 interface NodeProps {
   node: INodeStore;
   onDragStart(offset: NodePosition): void;
+  onConnectionDelete(connection: IConnectionStore): void;
 }
 
 export const NodeBlock: React.FunctionComponent<NodeProps> = observer(
-  ({ node, onDragStart }) => {
+  ({ node, onDragStart, onConnectionDelete }) => {
+    const onPortClick = (port: IPortStore) => {
+      console.log("onClick");
+      if (port.connection) {
+        onConnectionDelete(port.connection);
+      }
+    };
     const style = {
       position: "absolute",
       top: `${node.posY}px`,
       left: `${node.posX}px`,
-      userSelect: "none",
+      // userSelect: "none",
     } as const;
     return (
       <div style={style} id={node.id}>
         <DragHandler node={node} onDragStart={onDragStart} />
-        <Ports node={node} />
+        <Ports node={node} onPortClick={onPortClick} />
       </div>
     );
   }
