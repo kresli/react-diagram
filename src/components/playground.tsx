@@ -26,7 +26,7 @@ function getMousePosParent(
 }
 
 export const Playground: FunctionComponent<PlaygroundProps> = observer(
-  ({ playground }) => {
+  ({ playground, eventor }) => {
     const { nodes } = playground;
     const canvasSize = {
       width: 1,
@@ -35,97 +35,118 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
     const canvasRef = useRef<HTMLDivElement>(null);
     const playgroundRef = useRef<HTMLDivElement>(null);
 
-    const [{ dragNode, dragOffset }, setDragNode] = useState<{
-      dragNode: INodeStore | null;
-      dragOffset: NodePosition | null;
-    }>({ dragNode: null, dragOffset: null });
+    // const [{ dragNode, dragOffset }, setDragNode] = useState<{
+    //   dragNode: INodeStore | null;
+    //   dragOffset: NodePosition | null;
+    // }>({ dragNode: null, dragOffset: null });
 
-    const [{ isPan, panOffset }, setPan] = useState<{
-      isPan: boolean;
-      panOffset: NodePosition;
-    }>({ isPan: false, panOffset: { x: 0, y: 0 } });
+    // const [{ isPan, panOffset }, setPan] = useState<{
+    //   isPan: boolean;
+    //   panOffset: NodePosition;
+    // }>({ isPan: false, panOffset: { x: 0, y: 0 } });
+
+    // useEffect(() => {
+    //   playground.setCanvasRef(canvasRef.current);
+    // }, [canvasRef]);
+    // interface SetDrag {
+    //   (isDragging: true, node: INodeStore, offset: NodePosition): void;
+    //   (isDragging: false): void;
+    // }
+    // const setDrag: SetDrag = (
+    //   isDragging: boolean,
+    //   node?: INodeStore,
+    //   offset?: NodePosition
+    // ) => {
+    //   if (isDragging) {
+    //     const dragRelativeOffset = offset;
+    //     const dragOffset = {
+    //       x: dragRelativeOffset!.x / playground.canvasScale,
+    //       y: dragRelativeOffset!.y / playground.canvasScale,
+    //     };
+
+    //     setDragNode({ dragNode: node!, dragOffset: dragOffset! });
+    //   } else {
+    //     setDragNode({ dragNode: null, dragOffset: null });
+    //   }
+    // };
+
+    // const moveNode = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    //   if (!dragNode || !canvasRef.current || !dragOffset) return;
+    //   if (dragNode && evt.buttons === 0) setDrag(false);
+    //   const dragRelativeOffset = getMousePosParent(evt!, canvasRef.current);
+    //   const x = dragRelativeOffset.x / playground.canvasScale;
+    //   const y = dragRelativeOffset.y / playground.canvasScale;
+    //   dragNode.updatePosition(x - dragOffset.x, y - dragOffset.y);
+    // };
+
+    // const moveCanvas = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    //   if (!isPan) return;
+    //   if (isPan && evt.buttons === 0) {
+    //     setPan({ isPan: false, panOffset: panOffset });
+    //     return;
+    //   }
+    //   const { movementX, movementY } = evt;
+    //   const { x, y } = panOffset;
+    //   setPan({
+    //     isPan: true,
+    //     panOffset: { x: x + movementX, y: y + movementY },
+    //   });
+    // };
+
+    // const onMouseMove = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    //   evt.persist();
+    //   console.log(evt);
+    //   moveNode(evt);
+    //   moveCanvas(evt);
+    // };
+
+    // const onMouseDown = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    //   setPan({ isPan: true, panOffset });
+    // };
+
+    // const onWheel = (evt: React.WheelEvent<HTMLDivElement>) => {
+    //   const { deltaY } = evt;
+    //   if (deltaY > 0 && playground.canvasScale < 0.3) return;
+    //   const scaleFactor = deltaY / 1000;
+    //   const { x, y } = getMousePosParent(evt, canvasRef.current!);
+
+    //   const scale = playground.canvasScale - scaleFactor;
+    //   playground.setCanvasScale(scale);
+
+    //   playground.setCanvasScale(scale);
+    //   setPan({
+    //     isPan: false,
+    //     panOffset: {
+    //       x:
+    //         panOffset.x +
+    //         ((canvasSize.width * scaleFactor) / 100) *
+    //           (x / playground.canvasScale / (canvasSize.width / 100)),
+    //       y:
+    //         panOffset.y +
+    //         ((canvasSize.height * scaleFactor) / 100) *
+    //           (y / playground.canvasScale / (canvasSize.height / 100)),
+    //     },
+    //   });
+    // };
 
     useEffect(() => {
-      playground.setCanvasRef(canvasRef.current);
-    }, [canvasRef]);
-    interface SetDrag {
-      (isDragging: true, node: INodeStore, offset: NodePosition): void;
-      (isDragging: false): void;
-    }
-    const setDrag: SetDrag = (
-      isDragging: boolean,
-      node?: INodeStore,
-      offset?: NodePosition
-    ) => {
-      if (isDragging) {
-        const dragRelativeOffset = offset;
-        const dragOffset = {
-          x: dragRelativeOffset!.x / playground.canvasScale,
-          y: dragRelativeOffset!.y / playground.canvasScale,
-        };
-
-        setDragNode({ dragNode: node!, dragOffset: dragOffset! });
-      } else {
-        setDragNode({ dragNode: null, dragOffset: null });
-      }
-    };
-
-    const moveNode = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!dragNode || !canvasRef.current || !dragOffset) return;
-      if (dragNode && evt.buttons === 0) setDrag(false);
-      const dragRelativeOffset = getMousePosParent(evt!, canvasRef.current);
-      const x = dragRelativeOffset.x / playground.canvasScale;
-      const y = dragRelativeOffset.y / playground.canvasScale;
-      dragNode.updatePosition(x - dragOffset.x, y - dragOffset.y);
-    };
-
-    const moveCanvas = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      if (!isPan) return;
-      if (isPan && evt.buttons === 0) {
-        setPan({ isPan: false, panOffset: panOffset });
-        return;
-      }
-      const { movementX, movementY } = evt;
-      const { x, y } = panOffset;
-      setPan({
-        isPan: true,
-        panOffset: { x: x + movementX, y: y + movementY },
-      });
-    };
-
-    const onMouseMove = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      moveNode(evt);
-      moveCanvas(evt);
-    };
-
-    const onMouseDown = (evt: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-      setPan({ isPan: true, panOffset });
-    };
-
-    const onWheel = (evt: React.WheelEvent<HTMLDivElement>) => {
-      const { deltaY } = evt;
-      if (deltaY > 0 && playground.canvasScale < 0.3) return;
-      const scaleFactor = deltaY / 1000;
-      const { x, y } = getMousePosParent(evt, canvasRef.current!);
-
-      const scale = playground.canvasScale - scaleFactor;
-      playground.setCanvasScale(scale);
-
-      playground.setCanvasScale(scale);
-      setPan({
-        isPan: false,
-        panOffset: {
-          x:
-            panOffset.x +
-            ((canvasSize.width * scaleFactor) / 100) *
-              (x / playground.canvasScale / (canvasSize.width / 100)),
-          y:
-            panOffset.y +
-            ((canvasSize.height * scaleFactor) / 100) *
-              (y / playground.canvasScale / (canvasSize.height / 100)),
-        },
-      });
-    };
+      const {
+        width,
+        height,
+        x: boundX,
+        y: boundY,
+      } = playgroundRef.current?.getBoundingClientRect()!;
+      eventor.setPlaygroundBounds({ width, height, boundX, boundY });
+    }, []);
+    useEffect(() => {
+      const {
+        width,
+        height,
+        x: boundX,
+        y: boundY,
+      } = canvasRef.current?.getBoundingClientRect()!;
+      eventor.setCanvasBounds({ width, height, boundX, boundY });
+    }, []);
 
     const style = {
       display: "flex",
@@ -141,22 +162,27 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
       height: canvasSize.height,
       transformOrigin: "0 0",
       position: "absolute",
-      left: panOffset.x,
-      top: panOffset.y,
-      transform: `scale(${playground.canvasScale})`,
+      left: eventor.canvas.boundX,
+      top: eventor.canvas.boundY,
+      transform: `scale(${eventor.scale})`,
     } as const;
     return (
       <div
         style={style}
-        onMouseMove={onMouseMove}
-        onWheel={onWheel}
+        onMouseMove={eventor.onMouseMove}
+        onMouseDown={eventor.onMouseDown}
+        onMouseUp={eventor.onMouseUp}
+        onWheel={eventor.onWheel}
         ref={playgroundRef}
       >
         <Grid size={15} />
-        <CanvasDragger onMouseDown={onMouseDown} />
+        {/* <CanvasDragger onMouseDown={onMouseDown} /> */}
         <div className="Canvas" style={canvasStyle} ref={canvasRef}>
           <Connectors playground={playground} />
-          <Nodes playground={playground} setDrag={setDrag} />
+          <Nodes
+            playground={playground}
+            setDrag={() => console.log("set drag")}
+          />
         </div>
       </div>
     );
