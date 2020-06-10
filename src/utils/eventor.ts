@@ -1,13 +1,41 @@
 import { IPlaygroundStore, INodeStore } from "../stores";
-import { action, observable } from "mobx";
+import { action, observable, computed } from "mobx";
+import { computedAlive } from "./util";
 
 class NodeDrag {
+  private start: {
+    worldX: number;
+    worldY: number;
+    mouseClientX: number;
+    mouseClientY: number;
+    scale: number;
+  };
   constructor(
-    private start: {
-      worldX: number;
-      worldY: number;
+    private config: {
+      store: INodeStore;
+      mouseClientX: number;
+      mouseClientY: number;
+      scale: number;
     }
-  ) {}
+  ) {
+    this.start = {
+      worldX: config.store.posX,
+      worldY: config.store.posY,
+      mouseClientX: config.mouseClientX,
+      mouseClientY: config.mouseClientY,
+      scale: config.scale,
+    };
+  }
+  @action.bound
+  setClientPosition(mouseClientX: number, mouseClientY: number) {
+    const dragOffset = {
+      x: (mouseClientX - this.start.mouseClientX) / this.start.scale,
+      y: (mouseClientY - this.start.mouseClientY) / this.start.scale,
+    };
+    const x = dragOffset.x + this.start.worldX;
+    const y = dragOffset.y + this.start.worldY;
+    this.config.store.setPosition(x, y);
+  }
 }
 
 class CanvasDrag {
@@ -20,7 +48,7 @@ class CanvasDrag {
     }
   ) {}
 
-  @action private getPosition({
+  @action getClientPosition({
     clientX,
     clientY,
   }: {
@@ -56,12 +84,8 @@ export class Eventor {
     boundX: 0, // getBoundingBox()
     boundY: 0, // getBoundingBox()
   };
-  @observable dragStart: null | {
-    clientX: number;
-    clientY: number;
-    boundX: number;
-    boundY: number;
-  } = null;
+  @observable canvasDrag: CanvasDrag | null = null;
+  @observable nodeDrag: NodeDrag | null = null;
   @observable mouse = {
     buttons: 0,
     pageX: 0,
@@ -71,27 +95,23 @@ export class Eventor {
   };
 
   constructor(private playgroundStore: IPlaygroundStore) {}
-  getWorldPosition(x: number, y: number) {
-    return {
-      x: this.canvas.boundX - this.playground.boundX + x,
-      y: this.canvas.boundY - this.playground.boundY + y,
-    };
-  }
-  @action private dragCanvas() {
-    if (this.mouse.buttons !== 1) return;
+
+  @action
+  private dragCanvas() {
+    if (!this.canvasDrag) return;
     const { clientX, clientY } = this.mouse;
-    if (!this.dragStart) {
-      const { boundX, boundY } = this.canvas;
-      this.dragStart = {
-        clientX,
-        clientY,
-        boundX,
-        boundY,
-      };
-    }
-    const { boundX, boundY } = this.dragStart;
-    this.canvas.boundX = boundX + clientX - this.dragStart.clientX;
-    this.canvas.boundY = boundY + clientY - this.dragStart.clientY;
+    const { boundX, boundY } = this.canvasDrag.getClientPosition({
+      clientX,
+      clientY,
+    });
+    this.canvas.boundX = boundX;
+    this.canvas.boundY = boundY;
+  }
+  @action
+  private dragNode() {
+    if (!this.nodeDrag) return;
+    const { clientX, clientY } = this.mouse;
+    this.nodeDrag.setClientPosition(clientX, clientY);
   }
   @action.bound
   onMouseMove(evt: React.MouseEvent<HTMLDivElement, MouseEvent>) {
@@ -103,16 +123,20 @@ export class Eventor {
       clientY,
       buttons,
     };
+    if (this.mouse.buttons !== 1) return;
     this.dragCanvas();
+    this.dragNode();
   }
   @action.bound
   onMouseDown(evt: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     this.mouse.buttons = evt.buttons;
+    if (!this.nodeDrag) this.setDragCanvas();
   }
   @action.bound
   onMouseUp(evt: React.MouseEvent<HTMLDivElement, MouseEvent>) {
     this.mouse.buttons = evt.buttons;
-    this.dragStart = null;
+    this.canvasDrag = null;
+    this.nodeDrag = null;
   }
   @action.bound
   onWheel(evt: React.WheelEvent<HTMLDivElement>) {
@@ -145,5 +169,24 @@ export class Eventor {
     this.canvas = { ...config };
   }
   @action.bound
-  setDragNode(node: INodeStore) {}
+  setDragCanvas() {
+    const { clientX, clientY } = this.mouse;
+    const { boundX, boundY } = this.canvas;
+    this.canvasDrag = new CanvasDrag({
+      mouseClientX: clientX,
+      mouseClientY: clientY,
+      canvasBoundX: boundX,
+      canvasBoundY: boundY,
+    });
+  }
+  @action.bound
+  setDragNode(node: INodeStore) {
+    const { clientX, clientY } = this.mouse;
+    this.nodeDrag = new NodeDrag({
+      store: node,
+      mouseClientX: clientX,
+      mouseClientY: clientY,
+      scale: this.scale,
+    });
+  }
 }

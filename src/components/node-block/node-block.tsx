@@ -10,7 +10,8 @@ import {
 import { Ports } from "./ports";
 interface NodeProps {
   node: INodeStore;
-  onDragStart(offset: NodePosition): void;
+  onDragStart(evt: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
+  // onDragStart(offset: NodePosition): void;
   onConnectionDelete(connection: IConnectionStore): void;
 }
 
@@ -55,7 +56,7 @@ const DragHandler: React.FunctionComponent<{
       x: evt.pageX - x,
       y: evt.pageY - y,
     };
-    onDragStart(offset);
+    onDragStart(evt);
   };
   return (
     <div ref={ref} style={style} onMouseDown={onMouseDown}>

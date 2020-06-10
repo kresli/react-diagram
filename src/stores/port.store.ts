@@ -20,12 +20,12 @@ export const PortStore = types
       PortDirection.OUT
     ),
   })
-  .volatile((self) => ({
-    gateCanvasPosition: {
-      x: 0,
-      y: 0,
-    },
-  }))
+  // .volatile((self) => ({
+  //   gateCanvasPosition: {
+  //     x: 0,
+  //     y: 0,
+  //   },
+  // }))
   .views((self) => ({
     get isIn() {
       return self.direction === PortDirection.IN;
@@ -48,6 +48,9 @@ export const PortStore = types
     get scale(): number {
       return getParentOfType(self, PlaygroundStore).canvasScale;
     },
+    get gateCanvasPosition(): [x, y] | undefined {
+
+    }
     // get gateCanvasPosition(): { x: number; y: number } | undefined {
     //   // following check its just to make sure this getter will watch for node move
     //   if (!this.nodePosition.x && !this.nodePosition.y) return;

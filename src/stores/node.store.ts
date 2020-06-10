@@ -31,7 +31,7 @@ export const NodeStore = types
     },
   }))
   .actions((self) => ({
-    updatePosition(x: number, y: number) {
+    setPosition(x: number, y: number) {
       self.posX = x;
       self.posY = y;
     },

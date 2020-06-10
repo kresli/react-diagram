@@ -179,10 +179,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
         {/* <CanvasDragger onMouseDown={onMouseDown} /> */}
         <div className="Canvas" style={canvasStyle} ref={canvasRef}>
           <Connectors playground={playground} />
-          <Nodes
-            playground={playground}
-            setDrag={() => console.log("set drag")}
-          />
+          <Nodes playground={playground} setDrag={eventor.setDragNode} />
         </div>
       </div>
     );
@@ -191,14 +188,18 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
 
 const Nodes: FunctionComponent<{
   playground: IPlaygroundStore;
-  setDrag(isDragging: boolean, node?: INodeStore, offset?: NodePosition): void;
+  setDrag(
+    node: INodeStore,
+    ev: React.MouseEvent<HTMLDivElement, MouseEvent>
+  ): void;
+  // setDrag(isDragging: boolean, node?: INodeStore, offset?: NodePosition): void;
 }> = observer(({ playground, setDrag }) => (
   <>
     {playground.nodes.map((node) => (
       <NodeBlock
         key={node.id}
         node={node}
-        onDragStart={(evt) => setDrag(true, node, evt)}
+        onDragStart={(evt) => setDrag(node, evt)}
         onConnectionDelete={playground.deleteConnection}
       />
     ))}
