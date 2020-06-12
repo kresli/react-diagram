@@ -20,12 +20,9 @@ export const PortStore = types
       PortDirection.OUT
     ),
   })
-  // .volatile((self) => ({
-  //   gateCanvasPosition: {
-  //     x: 0,
-  //     y: 0,
-  //   },
-  // }))
+  .volatile((self) => ({
+    gateRef: null as HTMLDivElement | null,
+  }))
   .views((self) => ({
     get isIn() {
       return self.direction === PortDirection.IN;
@@ -39,6 +36,9 @@ export const PortStore = types
     get node(): INodeStore {
       return getParentOfType(self, NodeStore);
     },
+    get nodeRef(): HTMLDivElement | null {
+      return this.node.ref;
+    },
     get nodePosition(): { x: number; y: number } {
       return this.node.position;
     },
@@ -46,33 +46,8 @@ export const PortStore = types
       return getParentOfType(self, PlaygroundStore);
     },
     get scale(): number {
-      return getParentOfType(self, PlaygroundStore).canvasScale;
+      return getParentOfType(self, PlaygroundStore).eventor.scale;
     },
-    get gateCanvasPosition(): [x, y] | undefined {
-
-    }
-    // get gateCanvasPosition(): { x: number; y: number } | undefined {
-    //   // following check its just to make sure this getter will watch for node move
-    //   if (!this.nodePosition.x && !this.nodePosition.y) return;
-    //   const {
-    //     left: canvasLeft,
-    //     top: canvasTop,
-    //   } = this.playground.canvas?.getBoundingClientRect() || {
-    //     left: 0,
-    //     top: 0,
-    //   };
-    //   const { left: gateLeft, top: gateTop } = document
-    //     .getElementById(this.gateId)
-    //     ?.getBoundingClientRect() || {
-    //     left: 0,
-    //     top: 0,
-    //   };
-    //   const position = {
-    //     x: (gateLeft - canvasLeft) / this.scale,
-    //     y: (gateTop - canvasTop) / this.scale,
-    //   };
-    //   return position;
-    // },
     get connection(): IConnectionStore | null {
       const predict = this.isIn
         ? (c: IConnectionStore) => c.end === self
@@ -80,6 +55,24 @@ export const PortStore = types
       return (
         Array.from(this.playground.connections.values()).find(predict) || null
       );
+    },
+    get gateCanvasPosition(): { x: number; y: number } {
+      const canvasRef = this.playground.eventor.canvas.ref;
+      if (!self.gateRef || !this.node.position) return { x: 0, y: 0 };
+      let el: HTMLElement | null = self.gateRef;
+      let x = 0;
+      let y = 0;
+      while (el && el !== canvasRef) {
+        x += el.offsetLeft;
+        y += el.offsetTop;
+        el = el.offsetParent as HTMLElement;
+      }
+      return { x, y };
+    },
+  }))
+  .actions((self) => ({
+    setGateRef(ref: HTMLDivElement | null) {
+      self.gateRef = ref;
     },
   }));
 export interface IPortStore extends Instance<typeof PortStore> {}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { INodeStore, IPortStore } from "../../stores";
 import "./ports.scss";
 export const Ports: React.FunctionComponent<{
@@ -23,14 +23,30 @@ export const Ports: React.FunctionComponent<{
 const Port: React.FunctionComponent<{
   port: IPortStore;
   onPortClick(): void;
-}> = ({ port, onPortClick }) => (
-  <div className="Port" id={port.id}>
-    {port.isIn && (
-      <div className="gate" id={port.gateId} onClick={onPortClick} />
-    )}
-    <div className="label">{port.label}</div>
-    {port.isOut && (
-      <div className="gate" id={port.gateId} onClick={onPortClick} />
-    )}
-  </div>
-);
+}> = ({ port, onPortClick }) => {
+  const gateRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    port.setGateRef(gateRef.current);
+  }, [gateRef]);
+  return (
+    <div className="Port" id={port.id}>
+      {port.isIn && (
+        <div
+          className="gate"
+          id={port.gateId}
+          onClick={onPortClick}
+          ref={gateRef}
+        />
+      )}
+      <div className="label">{port.label}</div>
+      {port.isOut && (
+        <div
+          className="gate"
+          id={port.gateId}
+          onClick={onPortClick}
+          ref={gateRef}
+        />
+      )}
+    </div>
+  );
+};

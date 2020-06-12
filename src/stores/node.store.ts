@@ -19,6 +19,9 @@ export const NodeStore = types
     posX: types.optional(types.number, 0),
     posY: types.optional(types.number, 0),
   })
+  .volatile((self) => ({
+    ref: null as HTMLDivElement | null,
+  }))
   .views((self) => ({
     get portsIn() {
       return self.ports.filter(({ isIn }) => isIn);
@@ -31,9 +34,13 @@ export const NodeStore = types
     },
   }))
   .actions((self) => ({
+    setRef(ref: HTMLDivElement | null) {
+      self.ref = ref;
+    },
     setPosition(x: number, y: number) {
       self.posX = x;
       self.posY = y;
+      // self.ports.forEach((port) => port.updatePosition());
     },
   }));
 export interface INodeStore extends Instance<typeof NodeStore> {}

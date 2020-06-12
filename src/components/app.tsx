@@ -7,11 +7,10 @@ import { Eventor } from "../utils";
 export const App: React.FunctionComponent<{
   data: IPlaygroundStore;
 }> = ({ data }) => {
-  const eventor = new Eventor(data);
   return (
     <div className="App">
       <div style={{ padding: "3em", display: "flex", flex: 1, height: "100%" }}>
-        <Playground playground={data} eventor={eventor} />
+        <Playground playground={data} />
       </div>
     </div>
   );

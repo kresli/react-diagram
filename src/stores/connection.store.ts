@@ -20,9 +20,8 @@ export const ConnectionStore = types
   .views((self) => ({
     get startGateCanvasPosition(): { x: number; y: number } | null {
       const { start } = self;
-      return getType(start) === PortStore
-        ? (start as IPortStore).gateCanvasPosition
-        : null;
+      const port = getType(start) === PortStore ? (start as IPortStore) : null;
+      return port?.gateCanvasPosition || null;
     },
     get endGateCanvasPosition(): { x: number; y: number } | null {
       const { end } = self;

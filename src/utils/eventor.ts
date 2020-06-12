@@ -83,6 +83,7 @@ export class Eventor {
     height: 0,
     boundX: 0, // getBoundingBox()
     boundY: 0, // getBoundingBox()
+    ref: null as HTMLDivElement | null,
   };
   @observable canvasDrag: CanvasDrag | null = null;
   @observable nodeDrag: NodeDrag | null = null;
@@ -94,8 +95,13 @@ export class Eventor {
     clientY: 0,
   };
 
-  constructor(private playgroundStore: IPlaygroundStore) {}
-
+  @computedAlive
+  get canvasPosition() {
+    return {
+      x: this.canvas.boundX - this.playground.boundX,
+      y: this.canvas.boundY - this.playground.boundY,
+    };
+  }
   @action
   private dragCanvas() {
     if (!this.canvasDrag) return;
@@ -160,13 +166,15 @@ export class Eventor {
     this.playground = config;
   }
   @action.bound
-  setCanvasBounds(config: {
-    width: number;
-    height: number;
-    boundX: number;
-    boundY: number;
-  }) {
-    this.canvas = { ...config };
+  setCanvasBounds(canvasRef: HTMLDivElement | null) {
+    const bounds = canvasRef?.getBoundingClientRect();
+    this.canvas = {
+      width: bounds?.width || 0,
+      height: bounds?.height || 0,
+      boundX: bounds?.x || 0,
+      boundY: bounds?.y || 0,
+      ref: canvasRef,
+    };
   }
   @action.bound
   setDragCanvas() {

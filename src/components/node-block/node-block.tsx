@@ -1,5 +1,5 @@
 import { observer } from "mobx-react";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import React from "react";
 import {
   NodePosition,
@@ -17,6 +17,12 @@ interface NodeProps {
 
 export const NodeBlock: React.FunctionComponent<NodeProps> = observer(
   ({ node, onDragStart, onConnectionDelete }) => {
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+      node.setRef(ref.current);
+    }, [ref]);
+
     const onPortClick = (port: IPortStore) => {
       console.log("onClick");
       if (port.connection) {
@@ -30,7 +36,7 @@ export const NodeBlock: React.FunctionComponent<NodeProps> = observer(
       // userSelect: "none",
     } as const;
     return (
-      <div style={style} id={node.id}>
+      <div style={style} id={node.id} ref={ref}>
         <DragHandler node={node} onDragStart={onDragStart} />
         <Ports node={node} onPortClick={onPortClick} />
       </div>
@@ -43,6 +49,8 @@ const DragHandler: React.FunctionComponent<{
   onDragStart: NodeProps["onDragStart"];
 }> = observer(({ onDragStart, node }) => {
   const ref = useRef<HTMLDivElement>(null);
+  // const gateRef = useRef<HTMLDivElement>(null);
+
   const style = {
     padding: "1em",
     background: "green",
