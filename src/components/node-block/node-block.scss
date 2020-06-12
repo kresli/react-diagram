@@ -1,0 +1,66 @@
+$nodeColor: rgba(100, 100, 100, 1);
+$portsColor: transparentize(
+  $color: $nodeColor,
+  $amount: 0.5,
+);
+$borderRadius: 3px;
+$nodeInnerBorder: 1px solid
+  darken(
+    $color: $nodeColor,
+    $amount: 10,
+  );
+.NodeBlock {
+  position: absolute;
+  border-radius: $borderRadius;
+  border: 1px solid black;
+}
+
+.DragHandler {
+  padding: 1em;
+  background: $nodeColor;
+  user-select: none;
+  white-space: nowrap;
+  border-radius: $borderRadius $borderRadius 0 0;
+  border-bottom: $nodeInnerBorder;
+}
+
+.Ports {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  border-radius: 0 0 $borderRadius $borderRadius;
+
+  .ports-in {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-right: 0.5em;
+    background-color: darken($color: $portsColor, $amount: 5);
+  }
+  .ports-out {
+    padding-left: 0.5em;
+    background-color: darken($color: $portsColor, $amount: 10);
+    border-left: $nodeInnerBorder;
+  }
+}
+
+.Port {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  .label {
+    flex: 1;
+    justify-content: start;
+    display: flex;
+  }
+  .gate {
+    width: 1em;
+    height: 1em;
+    border-radius: 50%;
+    background: red;
+    margin: 0.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

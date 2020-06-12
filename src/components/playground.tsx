@@ -9,7 +9,7 @@ interface PlaygroundProps {
 
 export const Playground: FunctionComponent<PlaygroundProps> = observer(
   ({ playground }) => {
-    const { nodes, eventor } = playground;
+    const { canvas: eventor } = playground;
     const canvasSize = {
       width: 100,
       height: 100,
@@ -56,7 +56,7 @@ export const Playground: FunctionComponent<PlaygroundProps> = observer(
         onWheel={eventor.onWheel}
         ref={playgroundRef}
       >
-        <Grid size={15} />
+        {/* <Grid size={15} /> */}
         <div className="Canvas" style={canvasStyle} ref={canvasRef}>
           <Connectors playground={playground} />
           <Nodes playground={playground} setDrag={eventor.setDragNode} />
@@ -121,5 +121,5 @@ const Path: FunctionComponent<{
     [end.x - 50, end.y],
     [end.x, end.y],
   ].join(",");
-  return <path d={points} stroke="red" strokeWidth="3" fill="none" />;
+  return <path d={points} stroke="#137CBD" strokeWidth="3" fill="none" />;
 });

@@ -46,7 +46,7 @@ export const PortStore = types
       return getParentOfType(self, PlaygroundStore);
     },
     get scale(): number {
-      return getParentOfType(self, PlaygroundStore).eventor.scale;
+      return getParentOfType(self, PlaygroundStore).canvas.scale;
     },
     get connection(): IConnectionStore | null {
       const predict = this.isIn
@@ -57,7 +57,7 @@ export const PortStore = types
       );
     },
     get gateCanvasPosition(): { x: number; y: number } {
-      const canvasRef = this.playground.eventor.canvas.ref;
+      const canvasRef = this.playground.canvas.canvas.ref;
       if (!self.gateRef || !this.node.position) return { x: 0, y: 0 };
       let el: HTMLElement | null = self.gateRef;
       let x = 0;

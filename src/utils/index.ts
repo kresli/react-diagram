@@ -1,2 +1,2 @@
 export * from "./util";
-export * from "./eventor";
+export * from "./canvas";

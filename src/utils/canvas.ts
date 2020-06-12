@@ -1,5 +1,5 @@
-import { IPlaygroundStore, INodeStore } from "../stores";
-import { action, observable, computed } from "mobx";
+import { INodeStore } from "../stores";
+import { action, observable } from "mobx";
 import { computedAlive } from "./util";
 
 class NodeDrag {
