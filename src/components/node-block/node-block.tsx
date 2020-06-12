@@ -11,7 +11,6 @@ import { Ports } from "./ports";
 interface NodeProps {
   node: INodeStore;
   onDragStart(evt: React.MouseEvent<HTMLDivElement, MouseEvent>): void;
-  // onDragStart(offset: NodePosition): void;
   onConnectionDelete(connection: IConnectionStore): void;
 }
 
@@ -33,7 +32,6 @@ export const NodeBlock: React.FunctionComponent<NodeProps> = observer(
       position: "absolute",
       top: `${node.posY}px`,
       left: `${node.posX}px`,
-      // userSelect: "none",
     } as const;
     return (
       <div style={style} id={node.id} ref={ref}>
@@ -49,7 +47,6 @@ const DragHandler: React.FunctionComponent<{
   onDragStart: NodeProps["onDragStart"];
 }> = observer(({ onDragStart, node }) => {
   const ref = useRef<HTMLDivElement>(null);
-  // const gateRef = useRef<HTMLDivElement>(null);
 
   const style = {
     padding: "1em",

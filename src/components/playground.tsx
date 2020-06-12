@@ -116,10 +116,10 @@ const Path: FunctionComponent<{
   end: { x: number; y: number };
 }> = observer(({ start, end }) => {
   const points = [
-    [start.x, start.y],
-    [start.x + 30, start.y],
-    [end.x - 30, end.y],
+    [`M${start.x}`, start.y],
+    [`${start.x + 50}`, start.y],
+    [end.x - 50, end.y],
     [end.x, end.y],
   ].join(",");
-  return <polyline points={points} stroke="red" strokeWidth="3" fill="none" />;
+  return <path d={points} stroke="red" strokeWidth="3" fill="none" />;
 });
